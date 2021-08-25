@@ -1,11 +1,11 @@
 class Player:
     def __init__(self, name):
         self.name = name
-        self.pbs = [float("inf")]*25
+        self.pbs = [None]*25
 
     def pb(self, map_idx, time):
-        if time < self.pbs[map_idx]:
+        current_pb = self.pbs[map_idx]
+        if current_pb is None or int(time) < int(current_pb):
             self.pbs[map_idx] = time
             return True, time
         return False, self.pbs[map_idx]
-
