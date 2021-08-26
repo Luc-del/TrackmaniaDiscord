@@ -1,3 +1,4 @@
+import os
 from discord.ext import commands
 import records
 import validators.time as vtime
@@ -5,6 +6,11 @@ import validators.map as vmap
 
 botPrefix = "tm "
 botDescription = "VROUM VROUM"
+
+noPBString = "You didn't beat your PB on map {}. Current PB: {}"
+newPBString = "NEW PB on map {}: {}"
+noServerRecordString = "Server record is currently held by {} in {}"
+newServerRecordString = "NEW SERVER RECORD on map {}: {}"
 
 bot = commands.Bot(command_prefix=botPrefix, description=botDescription)
 r = records.Records()
@@ -45,11 +51,18 @@ async def pb(ctx, map_idx, time):
     if not ok:
         return
 
-    is_pb, time = r.add_pb(ctx.author.name, map_idx, time)
+    player_name = ctx.author.name
+    is_pb, is_server_record = r.add_pb(player_name, map_idx, time)
+    player_pb = r.get_player_pb(map_idx, player_name)
+    player_server_record, server_record = r.get_server_record(map_idx)
 
-    s = f"You didn't beat your PB on map {map_idx}. Current PB: {str(time)}"
+    await ctx.send(pb_string(player_server_record, map_idx, is_pb, player_pb, is_server_record, server_record))
+
+
+def pb_string(player_server_record, map_idx, is_pb, time, is_server_record, server_time):
+    if is_server_record:
+        return newServerRecordString.format(map_idx, server_time)
     if is_pb:
-        s = f"NEW PB on map {map_idx}: {str(time)}"
-    await ctx.send(s)
-
+        return newPBString.format(map_idx, time) + os.linesep + noServerRecordString.format(player_server_record, server_time)
+    return noPBString.format(map_idx, time)
 
