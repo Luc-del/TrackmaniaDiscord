@@ -1,8 +1,9 @@
 import os
 from discord.ext import commands
-import records
-import validators.time as vtime
-import validators.map as vmap
+from pkg.models import records
+import pkg.models.time as vtime
+import pkg.models.map as vmap
+from tabulate import tabulate
 
 botPrefix = "tm "
 botDescription = "VROUM VROUM"
@@ -19,12 +20,6 @@ r = records.Records()
 @bot.event
 async def on_ready():
     print("bot launched")
-
-
-@bot.command()
-async def coucou(ctx, *txt):
-    await ctx.send("Coucou !" + "-".join(txt))
-
 
 @bot.command()
 async def server_info(ctx):
@@ -66,3 +61,18 @@ def pb_string(player_server_record, map_idx, is_pb, time, is_server_record, serv
         return newPBString.format(map_idx, time) + os.linesep + noServerRecordString.format(player_server_record, server_time)
     return noPBString.format(map_idx, time)
 
+
+@bot.command()
+async def records(ctx, *map_idx):
+    if not map_idx:
+        map_idx = vmap.get_list()
+
+    rec = [("map", "player", "time")]
+    for idx in map_idx:
+        name, time = r.get_server_record(idx)
+        if name is not None:
+            rec.append((idx, name, time))
+
+    tab = tabulate(rec, headers='firstrow', tablefmt="grid", stralign='center')
+    print(tab)
+    await ctx.send(tab)

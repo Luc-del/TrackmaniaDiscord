@@ -8,3 +8,7 @@ def parse(idx):
         return idx, True
 
     return -1, False
+
+
+def get_list():
+    return range(min_idx, max_idx + 1)

@@ -1,6 +1,5 @@
 import utils
 from bot import *
-import sheet
 
 config_dir = "cfg/"
 config_file = "config.yml"
