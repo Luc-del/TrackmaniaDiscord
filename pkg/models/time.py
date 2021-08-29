@@ -35,6 +35,9 @@ class Time:
     def __int__(self):
         return self.ms + 1000*(self.s + 60*self.m)
 
+    def marshall_json(self):
+        return {"time": str(self)}
+
 
 
 

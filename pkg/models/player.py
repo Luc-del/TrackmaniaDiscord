@@ -1,4 +1,5 @@
 import pkg.models.map as vmap
+from utils.json import marshall_json_dict
 
 
 class Player:
@@ -16,3 +17,8 @@ class Player:
     def get_pb(self, map_idx):
         return self.pbs[map_idx]
 
+    def marshall_json(self):
+        return {
+            "name": self.name,
+            "pbs": marshall_json_dict(self.pbs)
+        }
