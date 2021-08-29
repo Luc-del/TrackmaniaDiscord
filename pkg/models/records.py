@@ -30,8 +30,10 @@ class Records:
         return self.__players[player_name].get_pb(map_idx)
 
     def get_server_record(self, map_idx):
-        return self.__by_map[map_idx].player_name, self.__by_map[map_idx].time
+        return self.__by_map[map_idx].player_name, self.__by_map[map_idx].time, self.__by_map[map_idx] is not Dual()
 
+    def player_exists(self, player_name):
+        return player_name in self.__players.keys()
 
 
 class Dual:

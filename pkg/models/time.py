@@ -1,7 +1,7 @@
 import re
 
-second_regex = "[0-6][0-9].[0-9]{3}"
-minute_regex = "[0-9]{1,2}'[0-6][0-9].[0-9]{3}"
+second_regex = "[0-5][0-9].[0-9]{3}"
+minute_regex = "[0-9]{1,2}'[0-5][0-9].[0-9]{3}"
 
 
 def parse(time):

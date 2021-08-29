@@ -39,7 +39,7 @@ async def server_info(ctx):
 
 @bot.command()
 async def pb(ctx, map_idx, time):
-    map_idx, ok = vmap.parse(map_idx)
+    map_idx, ok = vmap.validate(map_idx)
     if not ok:
         return
     time, ok = vtime.parse(time)
@@ -49,7 +49,7 @@ async def pb(ctx, map_idx, time):
     player_name = ctx.author.name
     is_pb, is_server_record = r.add_pb(player_name, map_idx, time)
     player_pb = r.get_player_pb(map_idx, player_name)
-    player_server_record, server_record = r.get_server_record(map_idx)
+    player_server_record, server_record, _ = r.get_server_record(map_idx)
 
     await ctx.send(pb_string(player_server_record, map_idx, is_pb, player_pb, is_server_record, server_record))
 
@@ -63,16 +63,44 @@ def pb_string(player_server_record, map_idx, is_pb, time, is_server_record, serv
 
 
 @bot.command()
-async def records(ctx, *map_idx):
-    if not map_idx:
+async def records(ctx, player_name, *map_idx):
+    if map_idx:
+        map_idx = vmap.validate_list(map_idx)
+    else:
         map_idx = vmap.get_list()
 
-    rec = [("map", "player", "time")]
-    for idx in map_idx:
-        name, time = r.get_server_record(idx)
-        if name is not None:
-            rec.append((idx, name, time))
+    if player_name.lower() == "server":
+        header = ["map", "player", "time"]
+        rec = get_server_records(map_idx)
+    else:
+        if not r.player_exists(player_name):
+            await ctx.send("unknown player " + player_name)
+            return
 
-    tab = tabulate(rec, headers='firstrow', tablefmt="grid", stralign='center')
-    print(tab)
-    await ctx.send(tab)
+        header = ["map", "time"]
+        rec = get_player_records(player_name, map_idx)
+
+    tab = tabulate(rec, headers=header, tablefmt="fancy_grid", stralign='center')
+    await ctx.send("```" + tab + "```")
+
+
+def get_server_records(map_idx):
+    rec = []
+    for idx in map_idx:
+        name, time, ok = r.get_server_record(idx)
+        if not ok:
+            name, time = "-", "-"
+        rec.append((idx, name, str(time)))
+
+    return rec
+
+
+def get_player_records(player_name, map_idx):
+    rec = []
+    for idx in map_idx:
+        time = r.get_player_pb(idx, player_name)
+        if not time:
+            time = "-"
+        rec.append((idx, str(time)))
+
+    return rec
