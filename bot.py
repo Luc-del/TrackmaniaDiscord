@@ -15,12 +15,13 @@ noServerRecordString = "Server record is currently held by {} in {}"
 newServerRecordString = "NEW SERVER RECORD on map {}: {}"
 
 bot = commands.Bot(command_prefix=botPrefix, description=botDescription)
-r = records.Records()
+r = file.read()
 
 
 @bot.event
 async def on_ready():
     print("bot launched")
+
 
 @bot.command()
 async def server_info(ctx):

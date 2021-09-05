@@ -40,3 +40,8 @@ class Records:
             "players": marshal_json_dict(self.__players),
         }
 
+    @staticmethod
+    def unmarshal_json(data):
+        r = Records()
+        r.__players = unmarshal_json_dict(data["players"], player.Player.unmarshal_json)
+        return r

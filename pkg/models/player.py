@@ -25,5 +25,7 @@ class Player:
     @staticmethod
     def unmarshal_json(data):
         p = Player()
-        p.pbs = time.Time.unmarshal_json(data["pbs"])
+        for k in data:
+            p.register_time(int(k), data[k])
+
         return p

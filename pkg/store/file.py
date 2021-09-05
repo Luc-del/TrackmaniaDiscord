@@ -17,5 +17,5 @@ def dump(r):
 
 def read():
     with open(__get_path(), 'r') as f:
-        return json.load(f, object_hook=records.Records.unmarshal_json)
+        return records.Records.unmarshal_json(json.load(f))
 
