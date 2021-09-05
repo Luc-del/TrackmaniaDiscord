@@ -5,9 +5,9 @@ max_idx = 25
 def validate(idx):
     idx = int(idx)
     if min_idx <= idx <= max_idx:
-        return idx, True
+        return idx
 
-    return -1, False
+    return None
 
 
 def get_list():
@@ -17,7 +17,7 @@ def get_list():
 def validate_list(map_idx):
     validated = []
     for x in map_idx:
-        idx, ok = validate(x)
-        if ok:
+        idx = validate(x)
+        if idx is not None:
             validated.append(idx)
     return sorted(set(validated))

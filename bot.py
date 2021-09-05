@@ -4,6 +4,7 @@ from pkg.models import records
 import pkg.models.time as vtime
 import pkg.models.map as vmap
 from tabulate import tabulate
+import pkg.store.file as file
 
 botPrefix = "tm "
 botDescription = "VROUM VROUM"
@@ -38,28 +39,37 @@ async def server_info(ctx):
 
 
 @bot.command()
+async def github(ctx):
+    await ctx.send("Feel free to contribute !\nhttps://github.com/Luc-del/TrackmaniaDiscord")
+
+
+@bot.command()
 async def pb(ctx, map_idx, time):
-    map_idx, ok = vmap.validate(map_idx)
-    if not ok:
+    map_idx = vmap.validate(map_idx)
+    if map_idx is None:
         return
-    time, ok = vtime.parse(time)
-    if not ok:
+    time = vtime.parse(time)
+    if time is None:
         return
 
     player_name = ctx.author.name
-    is_pb, is_server_record = r.add_pb(player_name, map_idx, time)
-    player_pb = r.get_player_pb(map_idx, player_name)
-    player_server_record, server_record, _ = r.get_server_record(map_idx)
+    str_time = vtime.to_string(time)
+    old_server_record = r.get_server_record(map_idx)
 
-    await ctx.send(pb_string(player_server_record, map_idx, is_pb, player_pb, is_server_record, server_record))
+    # beat his pb, check for server record
+    if r.register_player_time(player_name, map_idx, time):
+        best_player_name, server_record = r.get_server_record(map_idx)
+        if server_record < old_server_record:
+            bot_answer = newServerRecordString.format(map_idx, str_time)
+        else:
+            bot_answer = newPBString.format(map_idx, str_time) + \
+                         os.linesep + \
+                         noServerRecordString.format(best_player_name, server_record)
+        await ctx.send(bot_answer)
+        return
 
-
-def pb_string(player_server_record, map_idx, is_pb, time, is_server_record, server_time):
-    if is_server_record:
-        return newServerRecordString.format(map_idx, server_time)
-    if is_pb:
-        return newPBString.format(map_idx, time) + os.linesep + noServerRecordString.format(player_server_record, server_time)
-    return noPBString.format(map_idx, time)
+    await ctx.send(noPBString.format(map_idx, str_time))
+    # file.dump(r)
 
 
 @bot.command()
@@ -87,8 +97,8 @@ async def records(ctx, player_name, *map_idx):
 def get_server_records(map_idx):
     rec = []
     for idx in map_idx:
-        name, time, ok = r.get_server_record(idx)
-        if not ok:
+        name, time = r.get_server_record(idx)
+        if name is None:
             name, time = "-", "-"
         rec.append((idx, name, str(time)))
 
@@ -104,3 +114,13 @@ def get_player_records(player_name, map_idx):
         rec.append((idx, str(time)))
 
     return rec
+
+
+@bot.command()
+async def delete(ctx, map_idx):
+    map_idx = vmap.validate(map_idx)
+    if map_idx is None:
+        return
+
+    player_name = ctx.author.name
+    r.delete_player_pb(player_name, map_idx)

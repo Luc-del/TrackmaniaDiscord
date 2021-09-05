@@ -1,65 +1,43 @@
 from pkg.models import player
-import pkg.models.map as vmap
-from utils.json import marshall_json_dict
+import pkg.models.time as time
+from utils.json import marshal_json_dict, unmarshal_json_dict
 
 
 class Records:
     def __init__(self):
         self.__players = {}
-        self.__by_map = {k: None for k in vmap.get_list()}
 
     def add_player(self, player_name):
-        p = player.Player(player_name)
-        self.__players[p.name] = p
+        self.__players[player_name] = player.Player()
 
-    def add_pb(self, player_name, map_idx, time):
+    def register_player_time(self, player_name, map_idx, t):
         if player_name not in self.__players.keys():
             self.add_player(player_name)
-        is_pb = self.__players[player_name].pb(map_idx, time)
-        is_server_record = self.pb_by_map(map_idx, player_name, time)
-        return is_pb, is_server_record
+        return self.__players[player_name].register_time(map_idx, t)
 
-    def pb_by_map(self, map_idx, player_name, time):
-        if self.__by_map[map_idx] is None or self.__by_map[map_idx].beats(time):
-            self.__by_map[map_idx] = Dual(player_name, time)
-            return True
-        return False
-
-    def get_player_pb(self, map_idx, player_name):
+    def get_player_pb(self, player_name, map_idx):
         if player_name not in self.__players.keys():
             return None
         return self.__players[player_name].get_pb(map_idx)
 
+    def delete_player_pb(self, player_name, map_idx):
+        return self.__players[player_name].delete_pb(map_idx)
+
     def get_server_record(self, map_idx):
-        if self.__by_map[map_idx] is None:
-            return None, None, False
-        return self.__by_map[map_idx].player_name, self.__by_map[map_idx].time, True
+        best_player_name, best_player_time = None, None
+        for player_name in self.__players.keys():
+            player_time = self.__players[player_name].get_pb(map_idx)
+            if player_time is not None:
+                if best_player_name is None or best_player_time > player_time:
+                    best_player_name, best_player_time = player_name, player_time
+
+        return best_player_name, best_player_time
 
     def player_exists(self, player_name):
         return player_name in self.__players.keys()
 
-    def marshall_json(self):
+    def marshal_json(self):
         return {
-            "players": marshall_json_dict(self.__players),
-            "by_map": marshall_json_dict(self.__by_map)
+            "players": marshal_json_dict(self.__players),
         }
 
-
-class Dual:
-    def __init__(self, player_name=None, time=None):
-        self.player_name = player_name
-        self.time = time
-
-    def beats(self, time):
-        if self.time is None or int(time) < int(self.time):
-            return True
-        return False
-
-    def marshall_json(self):
-        if self.player_name is None:
-            return
-
-        return {
-            "player_name": self.player_name,
-            "time": self.time.marshall_json()
-        }
