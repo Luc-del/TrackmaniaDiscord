@@ -20,9 +20,7 @@ class Player:
         return self.pbs.pop(map_idx)
 
     def marshal_json(self):
-        return {
-            "pbs": marshal_json_dict(self.pbs)
-        }
+        return self.pbs
 
     @staticmethod
     def unmarshal_json(data):

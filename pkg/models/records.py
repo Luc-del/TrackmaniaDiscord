@@ -1,5 +1,4 @@
 from pkg.models import player
-import pkg.models.time as time
 from utils.json import marshal_json_dict, unmarshal_json_dict
 
 

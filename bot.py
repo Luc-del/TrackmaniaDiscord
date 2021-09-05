@@ -69,8 +69,6 @@ async def pb(ctx, map_idx, time):
         return
 
     await ctx.send(noPBString.format(map_idx, str_time))
-    # file.dump(r)
-
 
 @bot.command()
 async def records(ctx, player_name, *map_idx):
