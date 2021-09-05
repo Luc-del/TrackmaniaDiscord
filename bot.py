@@ -54,12 +54,12 @@ async def pb(ctx, map_idx, time):
 
     player_name = ctx.author.name
     str_time = vtime.to_string(time)
-    old_server_record = r.get_server_record(map_idx)
+    _, old_server_record = r.get_server_record(map_idx)
 
     # beat his pb, check for server record
     if r.register_player_time(player_name, map_idx, time):
         best_player_name, server_record = r.get_server_record(map_idx)
-        if server_record < old_server_record:
+        if old_server_record is None or server_record < old_server_record:
             bot_answer = newServerRecordString.format(map_idx, str_time)
         else:
             bot_answer = newPBString.format(map_idx, str_time) + \
@@ -100,7 +100,7 @@ def get_server_records(map_idx):
         name, time = r.get_server_record(idx)
         if name is None:
             name, time = "-", "-"
-        rec.append((idx, name, str(time)))
+        rec.append((idx, name, vtime.to_string(time)))
 
     return rec
 
@@ -108,10 +108,10 @@ def get_server_records(map_idx):
 def get_player_records(player_name, map_idx):
     rec = []
     for idx in map_idx:
-        time = r.get_player_pb(idx, player_name)
-        if not time:
+        time = r.get_player_pb(player_name, idx)
+        if time is None:
             time = "-"
-        rec.append((idx, str(time)))
+        rec.append((idx, vtime.to_string(time)))
 
     return rec
 

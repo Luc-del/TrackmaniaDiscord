@@ -3,7 +3,10 @@ max_idx = 25
 
 
 def validate(idx):
-    idx = int(idx)
+    try:
+        idx = int(idx)
+    except:
+        return None
     if min_idx <= idx <= max_idx:
         return idx
 

@@ -34,8 +34,10 @@ def from_int(time):
 
 
 def to_string(time):
-    if time is None:
-        return None
+    try:
+        time = int(time)
+    except:
+        return time
 
     m, s, ms = from_int(time)
 
