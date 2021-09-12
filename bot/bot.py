@@ -1,6 +1,5 @@
 import os
 from discord.ext import commands
-from pkg.models import records
 import pkg.models.time as vtime
 import pkg.models.map as vmap
 from tabulate import tabulate
@@ -15,7 +14,7 @@ noServerRecordString = "Server record is currently held by {} in {}"
 newServerRecordString = "NEW SERVER RECORD on map {}: {}"
 
 bot = commands.Bot(command_prefix=botPrefix, description=botDescription)
-r = file.read()
+server_records = file.read(file.get_path())
 
 
 @bot.event
@@ -55,11 +54,11 @@ async def pb(ctx, map_idx, time):
 
     player_name = ctx.author.name
     str_time = vtime.to_string(time)
-    _, old_server_record = r.get_server_record(map_idx)
+    _, old_server_record = server_records.get_server_record(map_idx)
 
     # beat his pb, check for server record
-    if r.register_player_time(player_name, map_idx, time):
-        best_player_name, server_record = r.get_server_record(map_idx)
+    if server_records.register_player_time(player_name, map_idx, time):
+        best_player_name, server_record = server_records.get_server_record(map_idx)
         if old_server_record is None or server_record < old_server_record:
             bot_answer = newServerRecordString.format(map_idx, str_time)
         else:
@@ -82,7 +81,7 @@ async def records(ctx, player_name, *map_idx):
         header = ["map", "player", "time"]
         rec = get_server_records(map_idx)
     else:
-        if not r.player_exists(player_name):
+        if not server_records.player_exists(player_name):
             await ctx.send("unknown player " + player_name)
             return
 
@@ -96,7 +95,7 @@ async def records(ctx, player_name, *map_idx):
 def get_server_records(map_idx):
     rec = []
     for idx in map_idx:
-        name, time = r.get_server_record(idx)
+        name, time = server_records.get_server_record(idx)
         if name is None:
             name, time = "-", "-"
         rec.append((idx, name, vtime.to_string(time)))
@@ -107,7 +106,7 @@ def get_server_records(map_idx):
 def get_player_records(player_name, map_idx):
     rec = []
     for idx in map_idx:
-        time = r.get_player_pb(player_name, idx)
+        time = server_records.get_player_pb(player_name, idx)
         if time is None:
             time = "-"
         rec.append((idx, vtime.to_string(time)))
@@ -122,4 +121,4 @@ async def delete(ctx, map_idx):
         return
 
     player_name = ctx.author.name
-    r.delete_player_pb(player_name, map_idx)
+    server_records.delete_player_pb(player_name, map_idx)

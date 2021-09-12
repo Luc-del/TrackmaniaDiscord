@@ -1,5 +1,5 @@
 import utils.utils as utils
-from bot import *
+from bot.bot import *
 
 
 config_dir = "cfg/"

@@ -3,19 +3,24 @@ import json
 import pkg.models.records as records
 
 backup_dir = "backup"
-backup_file = "summer2021.json"
+
+season = "summer"
+year = 2021
 
 
-def __get_path():
-    return os.path.join(backup_dir, backup_file)
+def get_path():
+    path = os.path.join(backup_dir, f"{season}{year}.json")
+    return path
 
 
 def dump(r):
-    with open(__get_path(), 'w') as f:
+    with open(get_path(), 'w') as f:
         json.dump(r.marshal_json(), f, indent=4)
 
 
-def read():
-    with open(__get_path(), 'r') as f:
+def read(path):
+    if not os.path.isfile(path):
+        return records.Records()
+    with open(path, 'r') as f:
         return records.Records.unmarshal_json(json.load(f))
 
